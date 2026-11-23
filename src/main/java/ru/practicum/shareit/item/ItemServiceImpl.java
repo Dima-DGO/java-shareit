@@ -31,6 +31,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(long userId, long itemId, ItemDto itemDto) {
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
         if (item.getOwner() == null || !Objects.equals(item.getOwner().getId(), userId)) {

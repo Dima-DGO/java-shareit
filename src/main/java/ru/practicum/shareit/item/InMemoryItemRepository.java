@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,7 +24,8 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public List<Item> findByOwnerId(long ownerId) {
         return items.values().stream()
-                .filter(item -> item.getOwner() != null && item.getOwner().getId() == ownerId)
+                .filter(item -> item.getOwner() != null
+                        && Objects.equals(item.getOwner().getId(), ownerId))
                 .toList();
     }
 
@@ -43,6 +45,7 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public void deleteByOwnerId(long ownerId) {
-        items.values().removeIf(item -> item.getOwner() != null && item.getOwner().getId() == ownerId);
+        items.values().removeIf(item -> item.getOwner() != null
+                && Objects.equals(item.getOwner().getId(), ownerId));
     }
 }
