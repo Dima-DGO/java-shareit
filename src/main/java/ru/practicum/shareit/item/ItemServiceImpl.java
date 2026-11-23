@@ -60,9 +60,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getByOwner(long userId) {
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         return itemRepository.findByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .toList();
@@ -73,11 +72,7 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isBlank()) {
             return List.of();
         }
-        String query = text.toLowerCase();
-        return itemRepository.findAll().stream()
-                .filter(item -> Boolean.TRUE.equals(item.getAvailable()))
-                .filter(item -> item.getName().toLowerCase().contains(query)
-                        || item.getDescription().toLowerCase().contains(query))
+        return itemRepository.search(text).stream()
                 .map(ItemMapper::toItemDto)
                 .toList();
     }

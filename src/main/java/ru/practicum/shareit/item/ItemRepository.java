@@ -10,9 +10,10 @@ public interface ItemRepository {
 
     List<Item> findByOwnerId(long ownerId);
 
-    List<Item> findAll();
+    List<Item> search(String text);
 
     Item save(Item item);
 
     void deleteByOwnerId(long ownerId);
 }
+

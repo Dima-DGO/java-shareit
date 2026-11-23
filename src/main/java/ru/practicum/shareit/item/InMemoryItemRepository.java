@@ -30,8 +30,13 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public List<Item> findAll() {
-        return List.copyOf(items.values());
+    public List<Item> search(String text) {
+        String query = text.toLowerCase();
+        return items.values().stream()
+                .filter(item -> Boolean.TRUE.equals(item.getAvailable()))
+                .filter(item -> item.getName().toLowerCase().contains(query)
+                        || item.getDescription().toLowerCase().contains(query))
+                .toList();
     }
 
     @Override
