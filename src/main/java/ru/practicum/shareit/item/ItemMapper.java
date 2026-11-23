@@ -15,5 +15,13 @@ public final class ItemMapper {
         dto.setAvailable(item.getAvailable());
         return dto;
     }
+
+    public static Item toItem(ItemDto dto) {
+        Item item = new Item();
+        item.setName(dto.getName());
+        item.setDescription(dto.getDescription());
+        item.setAvailable(dto.getAvailable());
+        return item;
+    }
 }
 
