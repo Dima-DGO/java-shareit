@@ -6,12 +6,14 @@ import lombok.RequiredArgsConstructor;
 
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public UserDto create(UserDto userDto) {
@@ -51,6 +53,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
+        itemRepository.deleteByOwnerId(userId);
         userRepository.deleteById(userId);
     }
 }
