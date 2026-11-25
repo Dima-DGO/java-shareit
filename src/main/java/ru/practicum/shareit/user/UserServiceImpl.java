@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto create(UserDto userDto) {
-        if (userRepository.existsByEmailAndIdNot(userDto.getEmail(), null)) {
+        if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new ConflictException("Email уже используется: " + userDto.getEmail());
         }
         User user = UserMapper.toUser(userDto);
