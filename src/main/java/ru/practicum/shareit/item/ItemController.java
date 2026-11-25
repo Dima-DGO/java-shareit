@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 
 @RestController
 @RequestMapping("/items")
@@ -39,12 +40,13 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto get(@PathVariable long itemId) {
-        return itemService.getById(itemId);
+    public ItemResponseDto get(@RequestHeader(USER_HEADER) long userId,
+                               @PathVariable long itemId) {
+        return itemService.getById(userId, itemId);
     }
 
     @GetMapping
-    public List<ItemDto> getByOwner(@RequestHeader(USER_HEADER) long userId) {
+    public List<ItemResponseDto> getByOwner(@RequestHeader(USER_HEADER) long userId) {
         return itemService.getByOwner(userId);
     }
 
