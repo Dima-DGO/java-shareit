@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -14,8 +15,10 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
@@ -29,6 +32,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto create(long userId, ItemDto itemDto) {
@@ -70,6 +74,7 @@ public class ItemServiceImpl implements ItemService {
         if (item.getOwner().getId().equals(userId)) {
             fillBookings(dto, itemId);
         }
+        fillComments(dto, itemId);
         return dto;
     }
 
@@ -82,6 +87,7 @@ public class ItemServiceImpl implements ItemService {
                 .map(item -> {
                     ItemResponseDto dto = ItemMapper.toItemResponseDto(item);
                     fillBookings(dto, item.getId());
+                    fillComments(dto, item.getId());
                     return dto;
                 })
                 .toList();
@@ -98,6 +104,25 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
     }
 
+    @Override
+    public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
+        boolean rented = bookingRepository.existsByItemIdAndBookerIdAndStatusAndEndBefore(
+                itemId, userId, BookingStatus.APPROVED, LocalDateTime.now());
+        if (!rented) {
+            throw new BadRequestException("Оставить отзыв можно только после завершения аренды");
+        }
+        Comment comment = new Comment();
+        comment.setText(commentDto.getText());
+        comment.setItem(item);
+        comment.setAuthor(author);
+        comment.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        return ItemMapper.toCommentDto(commentRepository.save(comment));
+    }
+
     private void fillBookings(ItemResponseDto dto, long itemId) {
         LocalDateTime now = LocalDateTime.now();
         List<Booking> approved = bookingRepository.findByItemIdAndStatus(itemId, BookingStatus.APPROVED);
@@ -109,6 +134,12 @@ public class ItemServiceImpl implements ItemService {
                 .filter(booking -> booking.getStart().isAfter(now))
                 .min(Comparator.comparing(Booking::getStart))
                 .ifPresent(booking -> dto.setNextBooking(toShort(booking)));
+    }
+
+    private void fillComments(ItemResponseDto dto, long itemId) {
+        dto.setComments(commentRepository.findByItemIdOrderByCreatedAsc(itemId).stream()
+                .map(ItemMapper::toCommentDto)
+                .toList());
     }
 
     private BookingShortDto toShort(Booking booking) {
