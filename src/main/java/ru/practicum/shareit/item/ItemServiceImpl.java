@@ -19,6 +19,7 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -41,6 +42,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto create(long userId, ItemDto itemDto) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+        if (itemRepository.existsByOwnerIdAndName(userId, itemDto.getName())) {
+            throw new ConflictException("Вещь с названием " + itemDto.getName() + " уже есть у этого пользователя");
+        }
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(owner);
         return ItemMapper.toItemDto(itemRepository.save(item));
@@ -57,6 +61,9 @@ public class ItemServiceImpl implements ItemService {
             throw new ForbiddenException("Редактировать вещь может только её владелец");
         }
         if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
+            if (itemRepository.existsByOwnerIdAndNameAndIdNot(userId, itemDto.getName(), itemId)) {
+                throw new ConflictException("Вещь с названием " + itemDto.getName() + " уже есть у этого пользователя");
+            }
             item.setName(itemDto.getName());
         }
         if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {

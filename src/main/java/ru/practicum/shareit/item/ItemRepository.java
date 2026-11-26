@@ -13,10 +13,15 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     void deleteByOwnerId(long ownerId);
 
+    boolean existsByOwnerIdAndName(Long ownerId, String name);
+
+    boolean existsByOwnerIdAndNameAndIdNot(Long ownerId, String name, Long id);
+
     @Query("select i from Item i " +
             "where i.available = true " +
             "and (upper(i.name) like upper(concat('%', ?1, '%')) " +
             "or upper(i.description) like upper(concat('%', ?1, '%')))")
     List<Item> search(String text);
 }
+
 
