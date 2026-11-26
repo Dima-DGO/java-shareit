@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import ru.practicum.shareit.item.model.Item;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -44,4 +45,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     void deleteByItemIdIn(List<Long> itemIds);
 
     void deleteByBookerId(Long bookerId);
+
+    List<Booking> findByItemInAndStatus(List<Item> items, BookingStatus status);
 }

@@ -4,8 +4,11 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,7 +75,10 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
         ItemResponseDto dto = ItemMapper.toItemResponseDto(item);
         if (item.getOwner().getId().equals(userId)) {
-            fillBookings(dto, itemId);
+            List<Booking> approved = bookingRepository.findByItemIdAndStatus(itemId, BookingStatus.APPROVED);
+            LocalDateTime now = LocalDateTime.now();
+            dto.setLastBooking(findLast(approved, now));
+            dto.setNextBooking(findNext(approved, now));
         }
         fillComments(dto, itemId);
         return dto;
@@ -83,11 +89,26 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemResponseDto> getByOwner(long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
-        return itemRepository.findByOwnerId(userId).stream()
+        List<Item> items = itemRepository.findByOwnerId(userId);
+        if (items.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, List<Booking>> bookings = bookingRepository
+                .findByItemInAndStatus(items, BookingStatus.APPROVED).stream()
+                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
+        Map<Long, List<Comment>> comments = commentRepository
+                .findByItemIn(items, Sort.by(Sort.Direction.ASC, "created")).stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+        LocalDateTime now = LocalDateTime.now();
+        return items.stream()
                 .map(item -> {
                     ItemResponseDto dto = ItemMapper.toItemResponseDto(item);
-                    fillBookings(dto, item.getId());
-                    fillComments(dto, item.getId());
+                    List<Booking> itemBookings = bookings.getOrDefault(item.getId(), List.of());
+                    dto.setLastBooking(findLast(itemBookings, now));
+                    dto.setNextBooking(findNext(itemBookings, now));
+                    dto.setComments(comments.getOrDefault(item.getId(), List.of()).stream()
+                            .map(ItemMapper::toCommentDto)
+                            .toList());
                     return dto;
                 })
                 .toList();
@@ -123,17 +144,20 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toCommentDto(commentRepository.save(comment));
     }
 
-    private void fillBookings(ItemResponseDto dto, long itemId) {
-        LocalDateTime now = LocalDateTime.now();
-        List<Booking> approved = bookingRepository.findByItemIdAndStatus(itemId, BookingStatus.APPROVED);
-        approved.stream()
+    private BookingShortDto findLast(List<Booking> bookings, LocalDateTime now) {
+        return bookings.stream()
                 .filter(booking -> booking.getEnd().isBefore(now))
                 .max(Comparator.comparing(Booking::getEnd))
-                .ifPresent(booking -> dto.setLastBooking(toShort(booking)));
-        approved.stream()
+                .map(this::toShort)
+                .orElse(null);
+    }
+
+    private BookingShortDto findNext(List<Booking> bookings, LocalDateTime now) {
+        return bookings.stream()
                 .filter(booking -> booking.getStart().isAfter(now))
                 .min(Comparator.comparing(Booking::getStart))
-                .ifPresent(booking -> dto.setNextBooking(toShort(booking)));
+                .map(this::toShort)
+                .orElse(null);
     }
 
     private void fillComments(ItemResponseDto dto, long itemId) {
