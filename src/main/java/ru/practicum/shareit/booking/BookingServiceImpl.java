@@ -31,9 +31,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto create(long userId, BookingRequestDto requestDto) {
-        if (requestDto.getStart() == null || requestDto.getEnd() == null) {
-            throw new BadRequestException("Даты начала и окончания обязательны");
-        }
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         Item item = itemRepository.findById(requestDto.getItemId())
@@ -46,9 +43,6 @@ public class BookingServiceImpl implements BookingService {
         }
         if (!requestDto.getStart().isBefore(requestDto.getEnd())) {
             throw new BadRequestException("Дата начала должна быть раньше даты окончания");
-        }
-        if (requestDto.getStart().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Дата начала не может быть в прошлом");
         }
         Booking booking = new Booking();
         booking.setItem(item);
