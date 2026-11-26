@@ -1,13 +1,18 @@
 package ru.practicum.shareit.user;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.CommentRepository;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserDto;
 
 @Service
@@ -16,6 +21,8 @@ import ru.practicum.shareit.user.dto.UserDto;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public UserDto create(UserDto userDto) {
@@ -56,6 +63,15 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
+        List<Long> itemIds = itemRepository.findByOwnerId(userId).stream()
+                .map(Item::getId)
+                .toList();
+        if (!itemIds.isEmpty()) {
+            commentRepository.deleteByItemIdIn(itemIds);
+            bookingRepository.deleteByItemIdIn(itemIds);
+        }
+        commentRepository.deleteByAuthorId(userId);
+        bookingRepository.deleteByBookerId(userId);
         itemRepository.deleteByOwnerId(userId);
         userRepository.deleteById(userId);
     }

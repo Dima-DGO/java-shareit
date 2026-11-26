@@ -40,4 +40,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                                            Long bookerId,
                                                            BookingStatus status,
                                                            LocalDateTime end);
+
+    void deleteByItemIdIn(List<Long> itemIds);
+
+    void deleteByBookerId(Long bookerId);
 }
