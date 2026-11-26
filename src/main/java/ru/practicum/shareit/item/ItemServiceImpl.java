@@ -95,12 +95,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDto> search(String text) {
+    public List<ItemResponseDto> search(String text) {
         if (text == null || text.isBlank()) {
             return List.of();
         }
         return itemRepository.search(text).stream()
-                .map(ItemMapper::toItemDto)
+                .map(ItemMapper::toItemResponseDto)
                 .toList();
     }
 
