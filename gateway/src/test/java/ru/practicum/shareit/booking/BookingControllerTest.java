@@ -128,4 +128,48 @@ class BookingControllerTest extends ControllerTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(10)));
     }
+
+    @Test
+    void bookItemWithoutItemIdReturns400() throws Exception {
+        String start = LocalDateTime.now().plusDays(1).withNano(0).toString();
+        String end = LocalDateTime.now().plusDays(2).withNano(0).toString();
+
+        mvc.perform(post("/bookings")
+                        .header(HEADER, 2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"start\":\"" + start + "\",\"end\":\"" + end + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+
+        verifyNoInteractions(bookingClient);
+    }
+
+    @Test
+    void bookItemWithoutStartReturns400() throws Exception {
+        String end = LocalDateTime.now().plusDays(2).withNano(0).toString();
+
+        mvc.perform(post("/bookings")
+                        .header(HEADER, 2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"itemId\":30,\"end\":\"" + end + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+
+        verifyNoInteractions(bookingClient);
+    }
+
+    @Test
+    void bookItemWithEndBeforeStartReturns400() throws Exception {
+        String start = LocalDateTime.now().plusDays(3).withNano(0).toString();
+        String end = LocalDateTime.now().plusDays(2).withNano(0).toString();
+
+        mvc.perform(post("/bookings")
+                        .header(HEADER, 2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"itemId\":30,\"start\":\"" + start + "\",\"end\":\"" + end + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+
+        verifyNoInteractions(bookingClient);
+    }
 }
