@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -28,7 +27,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto create(@RequestHeader(Constants.USER_HEADER) long userId,
-                          @Valid @RequestBody ItemDto itemDto) {
+                          @RequestBody ItemDto itemDto) {
         return itemService.create(userId, itemDto);
     }
 
@@ -58,7 +57,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(Constants.USER_HEADER) long userId,
                                  @PathVariable long itemId,
-                                 @Valid @RequestBody CommentDto commentDto) {
+                                 @RequestBody CommentDto commentDto) {
         return itemService.addComment(userId, itemId, commentDto);
     }
 }
