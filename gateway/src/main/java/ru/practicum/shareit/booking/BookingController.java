@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
@@ -24,7 +21,6 @@ import ru.practicum.shareit.booking.dto.BookingState;
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
-@Validated
 public class BookingController {
     private static final String USER_HEADER = "X-Sharer-User-Id";
 
@@ -32,24 +28,20 @@ public class BookingController {
 
     @GetMapping
     public ResponseEntity<Object> getBookings(@RequestHeader(USER_HEADER) long userId,
-                                              @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                              @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                              @RequestParam(name = "state", defaultValue = "all") String stateParam) {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
-        log.info("Список броней пользователя {}, state={}, from={}, size={}", userId, stateParam, from, size);
-        return bookingClient.getBookings(userId, state, from, size);
+        log.info("Список броней пользователя {}, state={}", userId, stateParam);
+        return bookingClient.getBookings(userId, state);
     }
 
     @GetMapping("/owner")
     public ResponseEntity<Object> getOwnerBookings(@RequestHeader(USER_HEADER) long userId,
-                                                   @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                                   @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                   @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                                   @RequestParam(name = "state", defaultValue = "all") String stateParam) {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
         log.info("Список броней владельца {}, state={}", userId, stateParam);
-        return bookingClient.getOwnerBookings(userId, state, from, size);
+        return bookingClient.getOwnerBookings(userId, state);
     }
 
     @PostMapping

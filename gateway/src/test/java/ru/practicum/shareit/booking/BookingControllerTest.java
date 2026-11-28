@@ -44,29 +44,25 @@ class BookingControllerTest extends ControllerTestBase {
     }
 
     @Test
-    void getBookingsWithDefaults() throws Exception {
-        when(bookingClient.getBookings(1L, BookingState.ALL, 0, 10))
+    void getBookingsWithDefaultState() throws Exception {
+        when(bookingClient.getBookings(1L, BookingState.ALL))
                 .thenReturn(ResponseEntity.ok(List.of()));
 
         mvc.perform(get("/bookings").header(HEADER, 1))
                 .andExpect(status().isOk());
 
-        verify(bookingClient).getBookings(1L, BookingState.ALL, 0, 10);
+        verify(bookingClient).getBookings(1L, BookingState.ALL);
     }
 
     @Test
-    void getBookingsWithStateAndPaging() throws Exception {
-        when(bookingClient.getBookings(1L, BookingState.CURRENT, 10, 5))
+    void getBookingsWithState() throws Exception {
+        when(bookingClient.getBookings(1L, BookingState.CURRENT))
                 .thenReturn(ResponseEntity.ok(List.of()));
 
-        mvc.perform(get("/bookings")
-                        .header(HEADER, 1)
-                        .param("state", "current")
-                        .param("from", "10")
-                        .param("size", "5"))
+        mvc.perform(get("/bookings").header(HEADER, 1).param("state", "current"))
                 .andExpect(status().isOk());
 
-        verify(bookingClient).getBookings(1L, BookingState.CURRENT, 10, 5);
+        verify(bookingClient).getBookings(1L, BookingState.CURRENT);
     }
 
     @Test
@@ -80,13 +76,13 @@ class BookingControllerTest extends ControllerTestBase {
 
     @Test
     void getOwnerBookings() throws Exception {
-        when(bookingClient.getOwnerBookings(1L, BookingState.ALL, 0, 10))
+        when(bookingClient.getOwnerBookings(1L, BookingState.ALL))
                 .thenReturn(ResponseEntity.ok(List.of()));
 
         mvc.perform(get("/bookings/owner").header(HEADER, 1))
                 .andExpect(status().isOk());
 
-        verify(bookingClient).getOwnerBookings(1L, BookingState.ALL, 0, 10);
+        verify(bookingClient).getOwnerBookings(1L, BookingState.ALL);
     }
 
     @Test
