@@ -58,8 +58,8 @@ class ItemRequestIntegrationTest {
 
         requestService.create(first.getId(), requestDto("Запрос первого"));
 
-        assertThat(requestService.getOthers(first.getId(), 0, 10), is(empty()));
-        assertThat(requestService.getOthers(second.getId(), 0, 10), hasSize(1));
+        assertThat(requestService.getOthers(first.getId()), is(empty()));
+        assertThat(requestService.getOthers(second.getId()), hasSize(1));
     }
 
     private User user(String email) {

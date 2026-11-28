@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -37,11 +36,9 @@ public class RequestController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Object> getAll(@RequestHeader(USER_HEADER) long userId,
-                                         @RequestParam(defaultValue = "0") int from,
-                                         @RequestParam(defaultValue = "10") int size) {
-        log.info("Запросы других пользователей, userId={}, from={}, size={}", userId, from, size);
-        return requestClient.getOthers(userId, from, size);
+    public ResponseEntity<Object> getAll(@RequestHeader(USER_HEADER) long userId) {
+        log.info("Запросы других пользователей, userId={}", userId);
+        return requestClient.getOthers(userId);
     }
 
     @GetMapping("/{requestId}")

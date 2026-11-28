@@ -65,12 +65,12 @@ class RequestControllerTest extends ControllerTestBase {
 
     @Test
     void getOtherUsersRequests() throws Exception {
-        when(requestClient.getOthers(2L, 0, 10)).thenReturn(ResponseEntity.ok(List.of()));
+        when(requestClient.getOthers(2L)).thenReturn(ResponseEntity.ok(List.of()));
 
         mvc.perform(get("/requests/all").header(HEADER, 2))
                 .andExpect(status().isOk());
 
-        verify(requestClient).getOthers(2L, 0, 10);
+        verify(requestClient).getOthers(2L);
     }
 
     @Test

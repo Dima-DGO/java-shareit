@@ -58,26 +58,13 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void getOthersPassesPagination() throws Exception {
-        when(itemRequestService.getOthers(1L, 5, 2)).thenReturn(List.of());
-
-        mockMvc.perform(get("/requests/all")
-                        .header(USER_HEADER, 1)
-                        .param("from", "5")
-                        .param("size", "2"))
-                .andExpect(status().isOk());
-
-        verify(itemRequestService).getOthers(1L, 5, 2);
-    }
-
-    @Test
-    void getOthersUsesDefaults() throws Exception {
-        when(itemRequestService.getOthers(1L, 0, 10)).thenReturn(List.of());
+    void getOthersReturnsAllOtherRequests() throws Exception {
+        when(itemRequestService.getOthers(1L)).thenReturn(List.of());
 
         mockMvc.perform(get("/requests/all").header(USER_HEADER, 1))
                 .andExpect(status().isOk());
 
-        verify(itemRequestService).getOthers(1L, 0, 10);
+        verify(itemRequestService).getOthers(1L);
     }
 
     @Test

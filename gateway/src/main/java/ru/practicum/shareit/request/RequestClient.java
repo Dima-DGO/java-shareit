@@ -1,7 +1,5 @@
 package ru.practicum.shareit.request;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -33,11 +31,8 @@ public class RequestClient extends BaseClient {
         return get("", userId);
     }
 
-    public ResponseEntity<Object> getOthers(long userId, int from, int size) {
-        Map<String, Object> parameters = Map.of(
-                "from", from,
-                "size", size);
-        return get("/all?from={from}&size={size}", userId, parameters);
+    public ResponseEntity<Object> getOthers(long userId) {
+        return get("/all", userId);
     }
 
     public ResponseEntity<Object> getById(long userId, long requestId) {

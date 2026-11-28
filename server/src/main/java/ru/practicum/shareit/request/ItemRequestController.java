@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -34,10 +33,8 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getOthers(@RequestHeader(Constants.USER_HEADER) long userId,
-                                          @RequestParam(defaultValue = "0") int from,
-                                          @RequestParam(defaultValue = "10") int size) {
-        return itemRequestService.getOthers(userId, from, size);
+    public List<ItemRequestDto> getOthers(@RequestHeader(Constants.USER_HEADER) long userId) {
+        return itemRequestService.getOthers(userId);
     }
 
     @GetMapping("/{requestId}")

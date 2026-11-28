@@ -7,12 +7,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
@@ -29,7 +26,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -110,23 +106,23 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getOthersUsesRequestedPage() {
+    void getOthersReturnsAllOtherRequests() {
+        ItemRequest request = request(10L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(requestRepository.findByRequesterIdNotOrderByCreatedDesc(eq(1L), any(Pageable.class)))
-                .thenReturn(List.of());
+        when(requestRepository.findByRequesterIdNotOrderByCreatedDesc(1L)).thenReturn(List.of(request));
+        when(itemRepository.findByRequestIdIn(List.of(10L))).thenReturn(List.of());
 
-        requestService.getOthers(1L, 20, 10);
+        List<ItemRequestDto> result = requestService.getOthers(1L);
 
-        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
-        verify(requestRepository).findByRequesterIdNotOrderByCreatedDesc(eq(1L), captor.capture());
-        assertThat(captor.getValue(), is(PageRequest.of(2, 10)));
+        assertThat(result, hasSize(1));
+        verify(requestRepository).findByRequesterIdNotOrderByCreatedDesc(1L);
     }
 
     @Test
     void getOthersRejectsUnknownUser() {
         when(userRepository.findById(5L)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> requestService.getOthers(5L, 0, 10));
+        assertThrows(NotFoundException.class, () -> requestService.getOthers(5L));
     }
 
     @Test

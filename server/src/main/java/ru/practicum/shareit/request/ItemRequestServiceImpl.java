@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,13 +46,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getOthers(long userId, int from, int size) {
+    public List<ItemRequestDto> getOthers(long userId) {
         getUser(userId);
-
-        int page = size > 0 ? Math.max(from, 0) / size : 0;
-        Pageable pageable = PageRequest.of(page, size > 0 ? size : 10);
-
-        return toDtoList(requestRepository.findByRequesterIdNotOrderByCreatedDesc(userId, pageable));
+        return toDtoList(requestRepository.findByRequesterIdNotOrderByCreatedDesc(userId));
     }
 
     @Override
